@@ -279,7 +279,7 @@ double AstarSearch::estimateCost(const geometry_msgs::Pose & pose)
   double total_cost = 0.0;
 
   // euclidean distance
-  total_cost += calcDistance2d(pose, goal_pose_) * astar_param_.distance_heuristic_weight;
+  //total_cost += calcDistance2d(pose, goal_pose_) * astar_param_.distance_heuristic_weight;
 
   // TODO(Kenji Miyake): Add more costs
   
