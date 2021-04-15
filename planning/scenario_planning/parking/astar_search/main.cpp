@@ -55,8 +55,7 @@ int main(int argc, char** argv){
       shape, 9.0, 
       144, 1.2, 2.0, 0.5, 2.0, 6.0,
       100, 1.0};
-  AstarSearch a(astar_param_);
-  auto astar = AstarSearch(astar_param_);
+  auto astar = AstarSearch(astar_param_, true, true);
 
   // load costmap from rosbag
   rosbag::Bag bag;
