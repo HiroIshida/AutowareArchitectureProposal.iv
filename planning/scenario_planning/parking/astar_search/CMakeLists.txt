@@ -29,6 +29,7 @@ add_library(astar_search
 
 target_link_libraries(astar_search
   ${catkin_LIBRARIES}
+  ${OMPL_LIBRARIES}
 )
 
 add_dependencies(astar_search
