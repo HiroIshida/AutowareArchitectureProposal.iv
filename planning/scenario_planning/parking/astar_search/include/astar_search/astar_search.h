@@ -29,6 +29,11 @@
 #include <nav_msgs/Path.h>
 #include <std_msgs/Header.h>
 
+#include <ompl/base/spaces/ReedsSheppStateSpace.h>
+#include <ompl/base/spaces/SE2StateSpace.h>
+#include <ompl/base/ScopedState.h>
+#include <ompl/base/State.h>
+
 enum class NodeStatus : uint8_t { None, Open, Closed, Obstacle };
 
 struct IndexXYT
@@ -210,6 +215,10 @@ private:
 
   // dump_rosbag
   bool dump_rosbag_;
+  
+  // tmp ishida
+  ompl::base::StateSpacePtr ompl_rsspace_;
+  ompl::base::StateSpacePtr ompl_se2space_;
 };
 
 #endif
