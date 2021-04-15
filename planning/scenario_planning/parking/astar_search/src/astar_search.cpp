@@ -183,7 +183,7 @@ AstarSearch::TransitionTable createTransitionTable(
 }  // namespace
 
 AstarSearch::AstarSearch(const AstarParam & astar_param, bool dump_rosbag) :
-  astar_param_(astar_param), dump_rosbag_(dump_rosbag_),
+  astar_param_(astar_param), dump_rosbag_(dump_rosbag),
   ompl_rsspace_(new ompl::base::ReedsSheppStateSpace()), 
   ompl_se2space_(new ompl::base::SE2StateSpace())
 {
