@@ -298,7 +298,7 @@ double AstarSearch::estimateCost(const geometry_msgs::Pose & pose)
   goal_state->setY(goal_pose_.position.y);
   goal_state->setYaw(tf2::getYaw(goal_pose_.orientation));
 
-  total_cost += rspace->distance(state.get(), goal_state.get());
+  total_cost += rspace->distance(state.get(), goal_state.get()) * astar_param_.distance_heuristic_weight;
 
   return total_cost;
 }
