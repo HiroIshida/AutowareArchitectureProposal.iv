@@ -16,6 +16,7 @@
 
 #include "astar_search/astar_search.h"
 
+#include <iostream>
 #include <vector>
 
 #include <rosbag/bag.h>
@@ -221,8 +222,8 @@ void AstarSearch::initializeNodes(const nav_msgs::OccupancyGrid & costmap)
 void print_pose(const geometry_msgs::Pose& pose){
   auto& pos = pose.position;
   auto& ori = pose.orientation;
-  std::cout << "position: " << pos.x << " " << pos.y << " " << pos.z<< std::endl; 
-  std::cout << "orientation: " << ori.x << " " << ori.y << " " << ori.z<< " " << ori.w << std::endl; 
+  std::cout << "position: " << pos.x << ", " << pos.y << ", " << pos.z<< std::endl; 
+  std::cout << "orientation: " << ori.x << ", " << ori.y << ", " << ori.z<< ", " << ori.w << std::endl; 
 }
 
 bool AstarSearch::makePlan(
@@ -238,12 +239,13 @@ bool AstarSearch::makePlan(
     bag.write("costmap", t_dummy, costmap_);
     bag.close();
 
-    std::cout << this->astar_param_ << std::endl; 
     std::cout << "start pose" << std::endl; 
     print_pose(start_pose);
 
     std::cout << "goal pose" << std::endl; 
     print_pose(goal_pose);
+
+    std::cout << this->astar_param_ << std::endl; 
   }
 
 

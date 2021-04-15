@@ -142,6 +142,25 @@ struct AstarParam
   // costmap configs
   int obstacle_threshold;            // obstacle threshold on grid [-]
   double distance_heuristic_weight;  // obstacle threshold on grid [0,255]
+
+  friend std::ostream& operator<<(std::ostream& os, const AstarParam p)
+  {
+    os << "use_back :" << p.use_back << std::endl;
+    os << "only_behind_solutions :" << p.only_behind_solutions << std::endl;
+    os << "time_limit :" << p.time_limit << std::endl;
+    os << "shape_length :" << p.robot_shape.length << std::endl;
+    os << "shape_width :" << p.robot_shape.width << std::endl;
+    os << "base2back :" << p.robot_shape.base2back << std::endl;
+    os << "minimum_turning_radius :" << p.minimum_turning_radius << std::endl;
+    os << "theta_size :" << p.theta_size << std::endl;
+    os << "curve_weight :" << p.curve_weight << std::endl;
+    os << "reverse_weight :" << p.reverse_weight << std::endl;
+    os << "lateral_goal_range :" << p.lateral_goal_range << std::endl;
+    os << "longitudinal_goal_range :" << p.longitudinal_goal_range << std::endl;
+    os << "angle_goal_range :" << p.angle_goal_range << std::endl;
+    os << "obstacle_threshold :" << p.obstacle_threshold << std::endl;
+    os << "distance_heuristic_weight :" << p.distance_heuristic_weight << std::endl;
+  }
 };
 
 class AstarSearch
