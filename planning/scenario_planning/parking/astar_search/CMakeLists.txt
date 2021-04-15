@@ -33,6 +33,13 @@ add_dependencies(astar_search
   ${catkin_EXPORTED_TARGETS}
 )
 
+add_executable(main main.cpp)
+
+target_link_libraries(main
+  ${catkin_LIBRARIES}
+  astar_search
+)
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
