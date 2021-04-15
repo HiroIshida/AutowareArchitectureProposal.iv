@@ -39,7 +39,7 @@ add_dependencies(astar_search
 )
 
 add_executable(main main.cpp src/astar_search)
-target_link_libraries(main ${catkin_LIBRARIES})
+target_link_libraries(main ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
