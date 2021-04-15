@@ -4,6 +4,7 @@ project(astar_search)
 add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
+  rosbag
   geometry_msgs
   nav_msgs
   std_msgs

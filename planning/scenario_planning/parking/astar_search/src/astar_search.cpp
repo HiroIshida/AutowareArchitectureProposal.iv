@@ -18,6 +18,8 @@
 
 #include <vector>
 
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -179,7 +181,7 @@ AstarSearch::TransitionTable createTransitionTable(
 
 }  // namespace
 
-AstarSearch::AstarSearch(const AstarParam & astar_param) : astar_param_(astar_param)
+AstarSearch::AstarSearch(const AstarParam & astar_param, bool dump_rosbag) : astar_param_(astar_param), dump_rosbag_(dump_rosbag)
 {
   transition_table_ = createTransitionTable(
     astar_param_.minimum_turning_radius, astar_param_.theta_size, astar_param_.use_back);
@@ -219,6 +221,17 @@ void AstarSearch::initializeNodes(const nav_msgs::OccupancyGrid & costmap)
 bool AstarSearch::makePlan(
   const geometry_msgs::Pose & start_pose, const geometry_msgs::Pose & goal_pose)
 {
+  if(dump_rosbag_){
+    rosbag::Bag bag;
+    bag.open("/tmp/astar.bag", rosbag::bagmode::Write);
+    ros::Time t_dummy; // so that this code can be run without rosnode
+    t_dummy.sec = 1.0;
+    bag.write("start_pose", t_dummy, start_pose_);
+    bag.write("goal_pose", t_dummy, goal_pose_);
+    bag.write("costmap", t_dummy, costmap_);
+    bag.close();
+  }
+
   start_pose_ = global2local(costmap_, start_pose);
   goal_pose_ = global2local(costmap_, goal_pose);
 
