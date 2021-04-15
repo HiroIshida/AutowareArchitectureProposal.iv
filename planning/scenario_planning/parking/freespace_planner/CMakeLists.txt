@@ -14,12 +14,17 @@ find_package(
     tf2_ros
     visualization_msgs
 )
+find_package(ompl REQUIRED)
+find_package(Eigen3 REQUIRED)
+ADD_DEFINITIONS(-DEIGEN_NO_DEBUG)
 
 catkin_package()
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OMPL_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 add_executable(freespace_planner

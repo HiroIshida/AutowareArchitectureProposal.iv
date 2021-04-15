@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_geometry_msgs
 )
+find_package(ompl REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -19,6 +20,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OMPL_INCLUDE_DIRS}
 )
 
 add_library(astar_search
@@ -27,6 +29,7 @@ add_library(astar_search
 
 target_link_libraries(astar_search
   ${catkin_LIBRARIES}
+  ${OMPL_LIBRARIES}
 )
 
 add_dependencies(astar_search
