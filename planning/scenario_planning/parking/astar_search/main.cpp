@@ -55,7 +55,7 @@ int main(int argc, char** argv){
       shape, 9.0, 
       144, 1.2, 2.0, 0.5, 2.0, 6.0,
       100, 1.0};
-  auto astar = AstarSearch(astar_param_, true, true);
+  auto astar = AstarSearch(astar_param_);
 
   // load costmap from rosbag
   rosbag::Bag bag;
@@ -80,10 +80,10 @@ int main(int argc, char** argv){
   const ros::WallTime begin = ros::WallTime::now();
   bool success = astar.makePlan(start, goal);
   const ros::WallTime now = ros::WallTime::now();
+  const double msec = (now - begin).toSec() * 1000.0;
   if(success){
-    const double msec = (now - begin).toSec() * 1000.0;
     std::cout << "plan success : " << msec << "[msec]" << std::endl; 
   }else{
-    std::cout << "plan fail" << std::endl; 
+    std::cout << "plan fail : " << msec << "[msec]" << std::endl; 
   }
 }
