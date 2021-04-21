@@ -1,3 +1,4 @@
+import csv
 from math import *
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,14 +41,14 @@ class Costmap(object):
         self.n_grid = n_grid
         self.origin = origin
 
-    def plot(self, pose_start, pose_goal):
+    def plot(self, pose_start, pose_goal, pose_seq=None):
         fig, ax = plt.subplots()
         xlin, ylin = [np.linspace(self.b_min[i], self.b_max[i], self.n_grid[i]) for i in range(2)]
         X, Y = np.meshgrid(xlin, ylin)
         ax.contourf(X, Y, self.arr)
 
         car = CarModel()
-        def plot_pose(pose, color):
+        def plot_pose(pose, color, lw=1.0):
             pos_xy = pose[:2]
             quat = pose[-4:]
             yaw = tft.euler_from_quaternion(quat)[2]
@@ -55,12 +56,23 @@ class Costmap(object):
             ax.scatter(pos_xy[0], pos_xy[1], c=color, s=2)
             for idx_pair in [[0, 1], [1, 2], [2, 3], [3, 0]]:
                 i, j = idx_pair
-                ax.plot([P[i, 0], P[j, 0]], [P[i, 1], P[j, 1]], color=color)
+                ax.plot([P[i, 0], P[j, 0]], [P[i, 1], P[j, 1]], color=color, linewidth=lw)
 
-        plot_pose(pose_start, "blue")
+        plot_pose(pose_start, "green")
         plot_pose(pose_goal, "red")
+
+        if pose_seq is not None:
+            for pose in pose_seq:
+                plot_pose(pose, "blue", lw=0.5)
+
         ax.axis("equal")
         plt.show()
+
+pose_list = []
+with open("../result/result.txt", "r") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        pose_list.append([float(e) for e in row])
 
 bag = rosbag.Bag("../bag/astar.bag")
 for topic, msg, _ in bag.read_messages(topics=["costmap"]):
@@ -68,5 +80,4 @@ for topic, msg, _ in bag.read_messages(topics=["costmap"]):
 costmap = Costmap(costmap_msg)
 pose_start = [3714.06, 73750.3, 0.0541427, 8.21603e-05, 5.30234e-05, 0.228649, 0.973509]
 pose_goal = [3719.11, 73745.8, 1.00101, 0, 0, 0.853535, 0.521036]
-costmap.plot(pose_start, pose_goal)
-
+costmap.plot(pose_start, pose_goal, pose_list)
