@@ -189,6 +189,7 @@ private:
   bool setGoalNode();
   double estimateCost(const geometry_msgs::Pose & pose);
 
+  bool detectCollision(const geometry_msgs::Pose & pose);
   bool detectCollision(const IndexXYT & index);
   bool isOutOfRange(const IndexXYT & index);
   bool isObs(const IndexXYT & index);

@@ -368,7 +368,8 @@ bool AstarSearch::search()
       setYaw(&next_pose.orientation, current_node->theta + transition.shift_theta);
       const auto next_index = pose2index(costmap_, next_pose, astar_param_.theta_size);
 
-      if (detectCollision(next_index)) {
+      //detectCollision(next_pose);
+      if (detectCollision(next_pose)) {
         continue;
       }
 
@@ -428,6 +429,75 @@ void AstarSearch::setPath(const AstarNode & goal_node)
   if (waypoints_.waypoints.size() > 1) {
     waypoints_.waypoints.at(0).is_back = waypoints_.waypoints.at(1).is_back;
   }
+}
+
+bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
+{
+  const auto index = pose2index(costmap_, pose, astar_param_.theta_size);
+  int n = 6;
+  for(int i=index.x-n; i<index.x+n; i++){
+    for(int j=index.x-n; j<index.x+n; j++){
+      IndexXYT index_tmp = {i, j, 0};
+      if(isOutOfRange(index_tmp)) return true;
+      if(isObs(index_tmp)){
+        return true;
+      }
+    }
+  }
+  return false;
+
+  /*
+  double yaw = tf2::getYaw(pose.orientation);
+  Eigen::Matrix2d Rmat;
+  Rmat << cos(yaw), sin(yaw), -sin(yaw), cos(yaw);
+
+  // Define the robot as rectangle
+  const RobotShape & robot_shape = astar_param_.robot_shape;
+  const double back = -1.0 * robot_shape.base2back;
+  const double front = robot_shape.length - robot_shape.base2back;
+  const double right = -1.0 * robot_shape.width / 2.0;
+  const double left = robot_shape.width / 2.0;
+
+  Eigen::Vector2d p0_body(back, left), p1_body(back, right), p2_body(front, right), p3_body(front, left);
+  Eigen::Vector2d body_offset(pose.position.x, pose.position.y);
+  Eigen::Vector2d p0_map = Rmat * p0_body + body_offset;
+  Eigen::Vector2d p1_map = Rmat * p1_body + body_offset;
+  Eigen::Vector2d p2_map = Rmat * p2_body + body_offset;
+  Eigen::Vector2d p3_map = Rmat * p3_body + body_offset;
+
+  auto idx0 = position2index(costmap_, p0_map);
+  auto idx1 = position2index(costmap_, p1_map);
+  auto idx2 = position2index(costmap_, p2_map);
+  auto idx3 = position2index(costmap_, p3_map);
+
+  auto idx_min_x = std::min({idx0.x, idx1.x, idx2.x, idx3.x});
+  auto idx_max_x = std::max({idx0.x, idx1.x, idx2.x, idx3.x});
+  auto idx_min_y = std::min({idx0.y, idx1.y, idx2.y, idx3.y});
+  auto idx_max_y = std::max({idx0.y, idx1.y, idx2.y, idx3.y});
+  auto box_sdf = [&Rmat](Eigen::Vector2d pos_map) -> double
+  {
+    // inv
+    Eigen::Vector2d pos_body = Rmat * pos_map;
+    return 0.0;
+  };
+
+  auto idx = position2index(costmap_, body_offset);
+  std::cout << isOutOfRange(idx) << std::endl; 
+  std::cout << isObs(idx) << std::endl; 
+  std::cout <<  << std::endl; 
+  */
+
+  /*
+  for(int i=idx_min_x; i<idx_max_x+1; i++){
+    for(int j=idx_min_y; j<idx_max_y+1; j++){
+      IndexXYT index = {i, j, 0};
+      if(~isOutOfRange(index) and ~isObs(index)){
+        std::cout << "hoge" << std::endl; 
+      }
+    }
+  }
+  */
+  //return true;
 }
 
 bool AstarSearch::detectCollision(const IndexXYT & base_index)
