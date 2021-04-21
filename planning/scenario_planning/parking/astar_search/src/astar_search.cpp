@@ -25,6 +25,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <astar_search/helper.h>
+#include <Eigen/LU>
 
 namespace
 {
@@ -197,6 +198,7 @@ AstarSearch::TransitionTable createTransitionTable(
 
 }  // namespace
 
+// construct
 AstarSearch::AstarSearch(const AstarParam & astar_param) :
   astar_param_(astar_param),
   ompl_rsspace_(new ompl::base::ReedsSheppStateSpace()), 
@@ -205,7 +207,7 @@ AstarSearch::AstarSearch(const AstarParam & astar_param) :
   transition_table_ = createTransitionTable(
     astar_param_.minimum_turning_radius, astar_param_.theta_size, astar_param_.use_back);
   dump_rosbag_ = true;
-  use_reeds_shepp_ = true;
+  use_reeds_shepp_ = false;
 }
 
 void AstarSearch::initializeNodes(const nav_msgs::OccupancyGrid & costmap)
@@ -383,8 +385,8 @@ bool AstarSearch::search()
       setYaw(&next_pose.orientation, current_node->theta + transition.shift_theta);
       const auto next_index = pose2index(costmap_, next_pose, astar_param_.theta_size);
 
-      //detectCollision(next_pose);
       if (detectCollision(next_pose)) {
+      //if (detectCollision(next_index)) {
         continue;
       }
 
@@ -446,25 +448,24 @@ void AstarSearch::setPath(const AstarNode & goal_node)
   }
 }
 
+/* TODO ishida
+Eigen::Matrix2d inverse_matrix(const Eigen::Matrix2d & m)
+{
+  // Because Eigen's inverse() function is slow with 2x2 matrix...
+  // it is better to write by ourself.
+  auto det = m(0, 0) * m(1, 1) - m(0, 1) * m(1, 0);
+  Eigen::Matrix2d minv;
+  minv << m(1, 1)/det, -m(0, 1)/det, m(1, 0)/det, m(0, 0);
+  return minv;
+}
+*/
+
 bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
 {
-  const auto index = pose2index(costmap_, pose, astar_param_.theta_size);
-  int n = 6;
-  for(int i=index.x-n; i<index.x+n; i++){
-    for(int j=index.x-n; j<index.x+n; j++){
-      IndexXYT index_tmp = {i, j, 0};
-      if(isOutOfRange(index_tmp)) return true;
-      if(isObs(index_tmp)){
-        return true;
-      }
-    }
-  }
-  return false;
-
-  /*
   double yaw = tf2::getYaw(pose.orientation);
   Eigen::Matrix2d Rmat;
   Rmat << cos(yaw), sin(yaw), -sin(yaw), cos(yaw);
+  Eigen::Matrix2d Rmat_inv = Rmat.inverse();
 
   // Define the robot as rectangle
   const RobotShape & robot_shape = astar_param_.robot_shape;
@@ -489,30 +490,32 @@ bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
   auto idx_max_x = std::max({idx0.x, idx1.x, idx2.x, idx3.x});
   auto idx_min_y = std::min({idx0.y, idx1.y, idx2.y, idx3.y});
   auto idx_max_y = std::max({idx0.y, idx1.y, idx2.y, idx3.y});
-  auto box_sdf = [&Rmat](Eigen::Vector2d pos_map) -> double
+
+  auto box_sdf = [&](Eigen::Vector2d pos_map) -> double
   {
-    // inv
-    Eigen::Vector2d pos_body = Rmat * pos_map;
-    return 0.0;
+    //https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+    Eigen::Vector2d pos_body = Rmat_inv * (pos_map - body_offset);
+    Eigen::Vector2d b(robot_shape.length * 0.5, robot_shape.width * 0.5); // TODO fix
+    Eigen::Vector2d q = pos_body.cwiseAbs() - b;
+    Eigen::Vector2d left_max(std::max(q(0), 0.0), std::max(q(1), 0.0));
+    double left = left_max.norm();
+    double right = std::min(q.maxCoeff(), 0.0);
+    return left + right;
   };
 
-  auto idx = position2index(costmap_, body_offset);
-  std::cout << isOutOfRange(idx) << std::endl; 
-  std::cout << isObs(idx) << std::endl; 
-  std::cout <<  << std::endl; 
-  */
-
-  /*
+  double margin = costmap_.info.resolution;
   for(int i=idx_min_x; i<idx_max_x+1; i++){
     for(int j=idx_min_y; j<idx_max_y+1; j++){
       IndexXYT index = {i, j, 0};
-      if(~isOutOfRange(index) and ~isObs(index)){
-        std::cout << "hoge" << std::endl; 
+      if(~isOutOfRange(index) and isObs(index)){
+        double dist = box_sdf(index2position(costmap_, index));
+        if(dist < margin){
+          return true;
+        }
       }
     }
   }
-  */
-  //return true;
+  return false;
 }
 
 bool AstarSearch::detectCollision(const IndexXYT & base_index)
