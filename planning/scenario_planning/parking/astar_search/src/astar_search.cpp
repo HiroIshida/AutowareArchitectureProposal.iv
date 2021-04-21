@@ -99,6 +99,14 @@ geometry_msgs::Pose local2global(
   return transformPose(pose_local, transform);
 }
 
+IndexXYT position2index(
+  const nav_msgs::OccupancyGrid & costmap, const Eigen::Vector2d & position)
+{
+  const int index_x = position[0] / costmap.info.resolution;
+  const int index_y = position[1] / costmap.info.resolution;
+  return {index_x, index_y, 0};
+}
+
 IndexXYT pose2index(
   const nav_msgs::OccupancyGrid & costmap, const geometry_msgs::Pose & pose_local,
   const int theta_size)
@@ -107,6 +115,13 @@ IndexXYT pose2index(
   const int index_y = pose_local.position.y / costmap.info.resolution;
   const int index_theta = discretizeAngle(tf2::getYaw(pose_local.orientation), theta_size);
   return {index_x, index_y, index_theta};
+}
+
+Eigen::Vector2d index2position(
+  const nav_msgs::OccupancyGrid & costmap, const IndexXYT & index){
+  Eigen::Vector2d pos;
+  pos << index.x * costmap.info.resolution, index.y * costmap.info.resolution;
+  return pos;
 }
 
 geometry_msgs::Pose index2pose(
