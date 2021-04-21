@@ -5,6 +5,7 @@
 #include <rosbag/view.h>
 #include <string>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -87,4 +88,15 @@ int main(int argc, char** argv){
   }else{
     std::cout << "plan fail : " << msec << "[msec]" << std::endl; 
   }
+  auto result = astar.getWaypoints();
+  // dump waypoints
+  ofstream file("../result/result.txt");
+  for(auto& point : result.waypoints){
+    auto& pos = point.pose.pose.position;
+    auto& ori = point.pose.pose.orientation;
+    file << pos.x << ", " << pos.y << ", " << pos.z << ", ";
+    file << ori.x << ", " << ori.y << ", " << ori.z << ", " << ori.w << std::endl;
+  }
+  file.close();
+
 }
