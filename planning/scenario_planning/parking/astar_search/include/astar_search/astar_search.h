@@ -173,7 +173,7 @@ class AstarSearch
 public:
   using TransitionTable = std::vector<std::vector<NodeUpdate>>;
 
-  explicit AstarSearch(const AstarParam & astar_param, bool use_reeds_shepp, bool dump_rosbag);
+  explicit AstarSearch(const AstarParam & astar_param);
 
   void setRobotShape(const RobotShape & robot_shape) { astar_param_.robot_shape = robot_shape; }
   void initializeNodes(const nav_msgs::OccupancyGrid & costmap);

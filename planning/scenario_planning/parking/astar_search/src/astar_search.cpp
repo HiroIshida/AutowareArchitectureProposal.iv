@@ -182,14 +182,15 @@ AstarSearch::TransitionTable createTransitionTable(
 
 }  // namespace
 
-AstarSearch::AstarSearch(const AstarParam & astar_param, bool use_reeds_shepp, bool dump_rosbag) :
-  astar_param_(astar_param), dump_rosbag_(dump_rosbag),
-  use_reeds_shepp_(use_reeds_shepp),
+AstarSearch::AstarSearch(const AstarParam & astar_param) :
+  astar_param_(astar_param),
   ompl_rsspace_(new ompl::base::ReedsSheppStateSpace()), 
   ompl_se2space_(new ompl::base::SE2StateSpace())
 {
   transition_table_ = createTransitionTable(
     astar_param_.minimum_turning_radius, astar_param_.theta_size, astar_param_.use_back);
+  dump_rosbag_ = true;
+  use_reeds_shepp_ = true;
 }
 
 void AstarSearch::initializeNodes(const nav_msgs::OccupancyGrid & costmap)
