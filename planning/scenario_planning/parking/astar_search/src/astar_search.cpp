@@ -385,9 +385,9 @@ bool AstarSearch::search()
       const auto next_index = pose2index(costmap_, next_pose, astar_param_.theta_size);
 
       // TODO ishida selectable
-      //if (detectCollision(next_pose)) {
-      if (detectCollision(next_index)) {
-        std::cout << detectCollision(next_pose) << std::endl; 
+      if (detectCollision(next_pose)) {
+      //if (detectCollision(next_index)) {
+        //std::cout << detectCollision(next_pose) << std::endl; 
         continue;
       }
 

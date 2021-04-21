@@ -74,7 +74,8 @@ int main(int argc, char** argv){
 
   geometry_msgs::Pose start;
   geometry_msgs::Pose goal;
-  set_pose(3716.06, 73751.3, 0.0541427, 8.21603e-05, 5.30234e-05, 0.228649, 0.973509, start);
+  //set_pose(3716.06, 73751.3, 0.0541427, 8.21603e-05, 5.30234e-05, 0.228649, 0.973509, start); //default
+  set_pose(3714.06, 73750.3, 0.0541427, 8.21603e-05, 5.30234e-05, 0.228649, 0.973509, start);
   set_pose(3719.11, 73745.8, 1.00101, 0, 0, 0.853535, 0.521036, goal);
 
   const ros::WallTime begin = ros::WallTime::now();
