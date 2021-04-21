@@ -25,7 +25,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <astar_search/helper.h>
-#include <Eigen/LU>
 
 namespace
 {
@@ -207,7 +206,7 @@ AstarSearch::AstarSearch(const AstarParam & astar_param) :
   transition_table_ = createTransitionTable(
     astar_param_.minimum_turning_radius, astar_param_.theta_size, astar_param_.use_back);
   dump_rosbag_ = true;
-  use_reeds_shepp_ = false;
+  use_reeds_shepp_ = true;
 }
 
 void AstarSearch::initializeNodes(const nav_msgs::OccupancyGrid & costmap)
@@ -385,8 +384,10 @@ bool AstarSearch::search()
       setYaw(&next_pose.orientation, current_node->theta + transition.shift_theta);
       const auto next_index = pose2index(costmap_, next_pose, astar_param_.theta_size);
 
-      if (detectCollision(next_pose)) {
-      //if (detectCollision(next_index)) {
+      // TODO ishida selectable
+      //if (detectCollision(next_pose)) {
+      if (detectCollision(next_index)) {
+        std::cout << detectCollision(next_pose) << std::endl; 
         continue;
       }
 
@@ -448,24 +449,13 @@ void AstarSearch::setPath(const AstarNode & goal_node)
   }
 }
 
-/* TODO ishida
-Eigen::Matrix2d inverse_matrix(const Eigen::Matrix2d & m)
-{
-  // Because Eigen's inverse() function is slow with 2x2 matrix...
-  // it is better to write by ourself.
-  auto det = m(0, 0) * m(1, 1) - m(0, 1) * m(1, 0);
-  Eigen::Matrix2d minv;
-  minv << m(1, 1)/det, -m(0, 1)/det, m(1, 0)/det, m(0, 0);
-  return minv;
-}
-*/
-
 bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
 {
+  // TODO ishida
   double yaw = tf2::getYaw(pose.orientation);
-  Eigen::Matrix2d Rmat;
-  Rmat << cos(yaw), sin(yaw), -sin(yaw), cos(yaw);
-  Eigen::Matrix2d Rmat_inv = Rmat.inverse();
+  Eigen::Matrix2d Rmat, Rmat_inv;
+  Rmat << cos(yaw), -sin(yaw), sin(yaw), cos(yaw);
+  Rmat_inv << cos(yaw), sin(yaw), -sin(yaw), cos(yaw);
 
   // Define the robot as rectangle
   const RobotShape & robot_shape = astar_param_.robot_shape;
@@ -503,7 +493,7 @@ bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
     return left + right;
   };
 
-  double margin = costmap_.info.resolution;
+  double margin = costmap_.info.resolution * 2;
   for(int i=idx_min_x; i<idx_max_x+1; i++){
     for(int j=idx_min_y; j<idx_max_y+1; j++){
       IndexXYT index = {i, j, 0};
