@@ -1,6 +1,8 @@
+from math import *
 import matplotlib.pyplot as plt
 import numpy as np
 import rosbag
+import tf.transformations as tft
 
 class CarModel(object):
     def __init__(self, length=5.5, width=2.75, base2back=1.5):
@@ -16,10 +18,11 @@ class CarModel(object):
         P = np.array([[back, left], [back, right], [front, right], [front, left]])
         return P
 
-    def get_four_points(self, pos):
+    def get_four_points(self, pos, yaw=0.0):
+        Rmat = np.array([[cos(yaw), -sin(yaw)], [sin(yaw), cos(yaw)]])
         pos = np.array(pos)
         P_ = self._get_four_points()
-        P = P_ + pos[None, :]
+        P = P_.dot(Rmat.T) + pos[None, :]
         return P
 
 class Costmap(object):
@@ -44,17 +47,18 @@ class Costmap(object):
         ax.contourf(X, Y, self.arr)
 
         car = CarModel()
-
-        def plot_pose(pose):
+        def plot_pose(pose, color):
             pos_xy = pose[:2]
-            P = car.get_four_points(pos_xy)
+            quat = pose[-4:]
+            yaw = tft.euler_from_quaternion(quat)[2]
+            P = car.get_four_points(pos_xy, yaw=yaw)
+            ax.scatter(pos_xy[0], pos_xy[1], c=color, s=2)
             for idx_pair in [[0, 1], [1, 2], [2, 3], [3, 0]]:
                 i, j = idx_pair
-                ax.plot([P[i, 0], P[j, 0]], [P[i, 1], P[j, 1]], color="red")
+                ax.plot([P[i, 0], P[j, 0]], [P[i, 1], P[j, 1]], color=color)
 
-
-        plot_pose(pose_start)
-        plot_pose(pose_goal)
+        plot_pose(pose_start, "blue")
+        plot_pose(pose_goal, "red")
         ax.axis("equal")
         plt.show()
 
