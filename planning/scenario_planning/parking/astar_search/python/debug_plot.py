@@ -45,7 +45,7 @@ class Costmap(object):
         fig, ax = plt.subplots()
         xlin, ylin = [np.linspace(self.b_min[i], self.b_max[i], self.n_grid[i]) for i in range(2)]
         X, Y = np.meshgrid(xlin, ylin)
-        ax.contourf(X, Y, self.arr)
+        ax.contourf(X, Y, self.arr, cmap="Greys")
 
         car = CarModel()
         def plot_pose(pose, color, lw=1.0):
