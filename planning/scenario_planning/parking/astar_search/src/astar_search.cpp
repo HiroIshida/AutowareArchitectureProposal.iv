@@ -384,11 +384,12 @@ bool AstarSearch::search()
       setYaw(&next_pose.orientation, current_node->theta + transition.shift_theta);
       const auto next_index = pose2index(costmap_, next_pose, astar_param_.theta_size);
 
-      // TODO ishida selectable
-      if (detectCollision(next_pose)) {
-      //if (detectCollision(next_index)) {
-        //std::cout << detectCollision(next_pose) << std::endl; 
-        continue;
+      // TODO ishida clean up
+      bool use_new_detector = false;
+      if(use_new_detector){
+        if (detectCollision(next_pose)) continue;
+      }else{
+        if (detectCollision(next_index)) continue;
       }
 
       // Compare cost
@@ -463,13 +464,14 @@ bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
   const double front = robot_shape.length - robot_shape.base2back;
   const double right = -1.0 * robot_shape.width / 2.0;
   const double left = robot_shape.width / 2.0;
+  Eigen::Vector2d center_offset(front - 0.5 * robot_shape.length, 0.0);
 
   Eigen::Vector2d p0_body(back, left), p1_body(back, right), p2_body(front, right), p3_body(front, left);
-  Eigen::Vector2d body_offset(pose.position.x, pose.position.y);
-  Eigen::Vector2d p0_map = Rmat * p0_body + body_offset;
-  Eigen::Vector2d p1_map = Rmat * p1_body + body_offset;
-  Eigen::Vector2d p2_map = Rmat * p2_body + body_offset;
-  Eigen::Vector2d p3_map = Rmat * p3_body + body_offset;
+  Eigen::Vector2d trans_body2map(pose.position.x, pose.position.y);
+  Eigen::Vector2d p0_map = Rmat * p0_body + trans_body2map;
+  Eigen::Vector2d p1_map = Rmat * p1_body + trans_body2map;
+  Eigen::Vector2d p2_map = Rmat * p2_body + trans_body2map;
+  Eigen::Vector2d p3_map = Rmat * p3_body + trans_body2map;
 
   auto idx0 = position2index(costmap_, p0_map);
   auto idx1 = position2index(costmap_, p1_map);
@@ -484,7 +486,7 @@ bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
   auto box_sdf = [&](Eigen::Vector2d pos_map) -> double
   {
     //https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
-    Eigen::Vector2d pos_body = Rmat_inv * (pos_map - body_offset);
+    Eigen::Vector2d pos_body = Rmat_inv * (pos_map - trans_body2map + center_offset);
     Eigen::Vector2d b(robot_shape.length * 0.5, robot_shape.width * 0.5); // TODO fix
     Eigen::Vector2d q = pos_body.cwiseAbs() - b;
     Eigen::Vector2d left_max(std::max(q(0), 0.0), std::max(q(1), 0.0));
@@ -493,7 +495,7 @@ bool AstarSearch::detectCollision(const geometry_msgs::Pose & pose)
     return left + right;
   };
 
-  double margin = costmap_.info.resolution * 2;
+  double margin = costmap_.info.resolution;
   for(int i=idx_min_x; i<idx_max_x+1; i++){
     for(int j=idx_min_y; j<idx_max_y+1; j++){
       IndexXYT index = {i, j, 0};
