@@ -1,15 +1,18 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(astar_search)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++14 -Wall)
 
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rosbag
   geometry_msgs
   nav_msgs
   std_msgs
   tf2
   tf2_geometry_msgs
 )
+find_package(ompl REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -19,6 +22,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OMPL_INCLUDE_DIRS}
 )
 
 add_library(astar_search
@@ -27,11 +31,15 @@ add_library(astar_search
 
 target_link_libraries(astar_search
   ${catkin_LIBRARIES}
+  ${OMPL_LIBRARIES}
 )
 
 add_dependencies(astar_search
   ${catkin_EXPORTED_TARGETS}
 )
+
+add_executable(main main.cpp src/astar_search)
+target_link_libraries(main ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
